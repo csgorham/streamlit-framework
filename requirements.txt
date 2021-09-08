@@ -1,6 +1,8 @@
 streamlit
-#pandas
-#plotly
+yfinance
+plotly
+pandas 
+
 #python-dotenv
 #altair
 #bokeh
