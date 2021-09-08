@@ -1,17 +1,2 @@
-TWITTER_CONSUMER_KEY = ''
-TWITTER_CONSUMER_SECRET = ''
-TWITTER_ACCESS_TOKEN = ''
-TWITTER_ACCESS_TOKEN_SECRET = ''
-
-TWITTER_USERNAMES = [
-    'traderstewie',
-    'the_chart_life',
-    'canuck2usa',
-    'sunrisetrader',
-    'tmltrader'
-]
-
-DB_HOST = '127.0.0.1'
-DB_USER = 'postgres'
-DB_PASS = 'password'
-DB_NAME = 'etfdb'
+API_KEY = 'NSdsa47P9Q6O6nAXQh47cR8ZG7ZwY0kLaobdGiYrWsjrdKZVURFaU3bNgbAr5Cx6'
+API_SECRET = '0G6JWwces6FoFmy2EDEMvxYpxOdN33iseXwIM6R3xhjk7F6vzdptmxjkTkH1J0sc'

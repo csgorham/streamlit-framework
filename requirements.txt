@@ -8,3 +8,6 @@ requests
 numpy
 tweepy 
 psycopg2
+python-binance
+TA-lib
+websocket_client
