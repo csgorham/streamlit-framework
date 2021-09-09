@@ -1,51 +1,94 @@
 
 
 import requests
+import io
+
 import json
-
-APIKEY = 'RN6CGXIAQ7RMQG9G'
-ticker = 'AAPL'
-# replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
-url = 'https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY&symbol={}&apikey={}'.format(ticker, APIKEY)
-
-r = requests.get(url)
-data = r.json()
-
-
-
+import  config
 import pandas as pd
 import yfinance as yf
 import streamlit as st
 import datetime as dt
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from alpha_vantage.alphavantage import AlphaVantage
+from alpha_vantage.timeseries import TimeSeries
 
 snp500 = pd.read_csv("datasets/SP500.csv")
 symbols = snp500['Symbol'].sort_values().tolist()        
 years =  ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020']
-months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+months =  {'January': 1, 'February':2, 'March':3, 'April':4, 'May':5, 'June':6, 'July':7, 'August':8, 'September':9, 'October':10, 'November':11, 'December':12}
+
+technicalindicators = [' ']
+
 
 ticker = st.sidebar.selectbox(
     'Choose a S&P 500 Stock',
      symbols)
 
-infoType = st.sidebar.radio(
-        "Choose an info type",
-        ('Fundamental', 'Technical')
-    )
+#infoType = st.sidebar.radio(
+#        "Choose an info type",
+#        ('Fundamental', 'Technical')
+#    )
 
-year = st.sidebar.radio(
+year = st.sidebar.selectbox(
         "Year",
         years)
     
 
-month  = st.sidebar.radio(
+month  = st.sidebar.selectbox(
         "Month",
-        months)
+        months.keys())
 
- 
-stock = yf.Ticker(ticker)
 
+# replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
+url = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&outputsize=full&symbol={}&apikey={}'.format(ticker, config.APIKEY)
+
+r = requests.get(url)
+data = r.json()
+try: 
+   df = pd.DataFrame.from_dict(data)
+
+   # DATA CLEANING
+   df=df.iloc[5:, 1:]
+
+   df = df['Time Series (Daily)'].apply(pd.Series)
+
+   df['5. adjusted close'] = pd.to_numeric(df['5. adjusted close'], downcast="float")
+
+
+   df.index = pd.to_datetime(df.index)
+
+   ### start and end
+   dfyear = df.loc[year + '-' + str(months[month]) ]
+
+   #PRINT DATAGRAME
+   #st.dataframe(dfyear)
+
+   if len(dfyear) == 0:
+      st.markdown("There is no data for " + ticker + ' in ' + month + ' ' + year )
+   else: 
+      ### PLOTS
+      fig = go.Figure(
+            data=go.Scatter( x=dfyear.index, y=dfyear['5. adjusted close']))
+      fig.update_layout(
+      title={
+            'text':  ticker + ' Adjusted Close ' , # + month + ' ' + year ,
+           'y':0.9,
+            'x':0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'})
+      fig.update_yaxes(tickprefix="$")
+      st.plotly_chart(fig, use_container_width=True)
+
+except ValueError:
+   st.markdown("API LIMIT REACHED: 5 per minute - try again in a minute!")
+
+
+
+
+
+_="""stock = yf.Ticker(ticker)
 if(infoType == 'Fundamental'):
     stock = yf.Ticker(ticker)
     info = stock.info 
@@ -94,11 +137,10 @@ if(infoType == 'Fundamental'):
     fig = go.Figure(
             data=go.Scatter(x=df['Date'], y=df['Adj Close'])
         )
+##'y':0.9, 'x':0.5,
     fig.update_layout(
         title={
-            'text': "Stock Prices Over Past Two Years",
-            'y':0.9,
-            'x':0.5,
+            'text': "Stock Prices Over Past Two Years", 
             'xanchor': 'center',
             'yanchor': 'top'})
     st.plotly_chart(fig, use_container_width=True)
@@ -320,4 +362,4 @@ else:
     
     figBoll.update_yaxes(tickprefix="$")
     st.plotly_chart(figBoll, use_container_width=True)
-
+""";
